@@ -21,10 +21,20 @@
 $(call inherit-product, $(SRC_TARGET_DIR)/product/media_system_ext.mk)
 
 # /system_ext packages
+ifeq ($(USE_GMS),true)
+PRODUCT_PACKAGES += \
+    Launcher3QuickStep \
+    Provision \
+    SettingsGoogle \
+    StorageManager \
+    SystemUIGoogle \
+    WallpaperCropper
+else
 PRODUCT_PACKAGES += \
     Launcher3QuickStep \
     Provision \
     Settings \
     StorageManager \
     SystemUI \
-    WallpaperCropper \
+    WallpaperCropper
+endif
