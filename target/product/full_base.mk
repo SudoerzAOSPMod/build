@@ -51,7 +51,7 @@ PRODUCT_PROPERTY_OVERRIDES := \
 PRODUCT_LOCALES := en_US
 
 # Get some sounds
-ifneq ($(TARGET_GMS),true)
+ifneq ($(USE_GMS),true)
 $(call inherit-product-if-exists, frameworks/base/data/sounds/AllAudio.mk)
 endif
 
