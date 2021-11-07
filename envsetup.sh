@@ -1882,10 +1882,3 @@ if [ -z ${CCACHE_EXEC} ]; then
         echo -e "\e[31m\e[1mccache not found/installed!\e[0m"
     fi
 fi
-
-export ANDROID_BUILD_TOP=$(gettop)
-
-function repopick() {
-    T=$(gettop)
-    $T/vendor/arrow/build/tools/repopick.py $@
-}
