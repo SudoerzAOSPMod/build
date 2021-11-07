@@ -56,6 +56,6 @@ if [ -n "$BUILD_THUMBPRINT" ] ; then
   echo "ro.build.thumbprint=$BUILD_THUMBPRINT"
 fi
 
-echo "ro.arrow.device=$SUDOERZ_DEVICE"
+echo "ro.sudoerz.device=$SUDOERZ_DEVICE"
 
 echo "# end build properties"
