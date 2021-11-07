@@ -147,8 +147,8 @@ function check_product()
         echo "Couldn't locate the top of the tree.  Try setting TOP." >&2
         return
     fi
-    if (echo -n $1 | grep -q -e "^arrow_") ; then
-        SUDOERZ_BUILD=$(echo -n $1 | sed -e 's/^arrow_//g')
+    if (echo -n $1) ; then
+        SUDOERZ_BUILD=$(echo -n $1)
     else
         SUDOERZ_BUILD=
     fi
