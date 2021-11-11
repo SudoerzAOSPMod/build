@@ -317,7 +317,7 @@ FIND_LEAVES_EXCLUDES := $(addprefix --prune=, $(SCAN_EXCLUDE_DIRS) .repo .git)
 
 -include vendor/extra/BoardConfigExtra.mk
 ifneq ($(SUDOERZ_BUILD),)
-include vendor/sudoerz/config/BoardConfigArrow.mk
+include vendor/sudoerz/config/BoardConfigSudoerz.mk
 endif
 
 # The build system exposes several variables for where to find the kernel
@@ -1169,13 +1169,8 @@ dont_bother_goals := out \
 # consistency with those defined in BoardConfig.mk files.
 include $(BUILD_SYSTEM)/android_soong_config_vars.mk
 
-ifneq ($(SUDOERZ_BUILD),)
-ifneq ($(wildcard device/sudoerz/sepolicy/common/sepolicy.mk),)
-## We need to be sure the global selinux policies are included
-## last, to avoid accidental resetting by device configs
-$(eval include device/sudoerz/sepolicy/common/sepolicy.mk)
-endif
-endif
+#Sudoerz SePolicy
+include device/sudoerz/sepolicy/common/sepolicy.mk
 
 ifeq ($(CALLED_FROM_SETUP),true)
 include $(BUILD_SYSTEM)/ninja_config.mk
