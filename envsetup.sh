@@ -727,8 +727,6 @@ function lunch()
     set_stuff_for_environment
     [[ -n "${ANDROID_QUIET_BUILD:-}" ]] || printconfig
     destroy_build_var_cache
-
-    arrow_prebuilts
 }
 
 unset COMMON_LUNCH_CHOICES_CACHE
@@ -1874,11 +1872,4 @@ export ANDROID_BUILD_TOP=$(gettop)
 function repopick() {
     T=$(gettop)
     $T/vendor/arrow/build/tools/repopick.py $@
-}
-
-function arrow_prebuilts() {
-    if [ -z ${ARROW_PREBUILTS} ]; then
-        bash $ANDROID_BUILD_TOP/packages/apps/ArrowPrebuilts/ArrowPrebuilts.sh
-        export ARROW_PREBUILTS=1
-    fi
 }
