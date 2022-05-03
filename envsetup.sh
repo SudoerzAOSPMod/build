@@ -148,11 +148,11 @@ function check_product()
         return
     fi
     if (echo -n $1 | grep -q -e "^arrow_") ; then
-        ARROW_BUILD=$(echo -n $1 | sed -e 's/^arrow_//g')
+        SUDOERZ_BUILD=$(echo -n $1 | sed -e 's/^arrow_//g')
     else
-        ARROW_BUILD=
+        SUDOERZ_BUILD=
     fi
-    export ARROW_BUILD
+    export SUDOERZ_BUILD
 
         TARGET_PRODUCT=$1 \
         TARGET_BUILD_VARIANT= \
