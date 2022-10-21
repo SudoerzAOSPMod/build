@@ -1676,6 +1676,7 @@ function _wrap_build()
       "$@"
       return $?
     fi
+	echo "" > $ANDROID_BUILD_TOP/monitor/build_result
     local start_time=$(date +"%s")
     "$@"
     local ret=$?
@@ -1686,28 +1687,50 @@ function _wrap_build()
     local secs=$(($tdiff % 60))
     local ncolors=$(tput colors 2>/dev/null)
     if [ -n "$ncolors" ] && [ $ncolors -ge 8 ]; then
-        color_failed=$'\E'"[0;31m"
-        color_success=$'\E'"[0;32m"
+        color_failed=$'\E'"[1;41m"
+        color_success=$'\E'"[1;42m"
         color_reset=$'\E'"[00m"
+        color_time=$'\E'"[1;43m"
+        color_time_text=$'\E'"[1;30m"
     else
         color_failed=""
         color_success=""
         color_reset=""
+        color_time=""
+        color_time_text=""
     fi
+
     echo
+
     if [ $ret -eq 0 ] ; then
         echo -n "${color_success}#### build completed successfully "
     else
         echo -n "${color_failed}#### failed to build some targets "
     fi
     if [ $hours -gt 0 ] ; then
-        printf "(%02g:%02g:%02g (hh:mm:ss))" $hours $mins $secs
+        printf "${color_time}${color_time_text}(%02g:%02g:%02g (hh:mm:ss))" $hours $mins $secs
     elif [ $mins -gt 0 ] ; then
-        printf "(%02g:%02g (mm:ss))" $mins $secs
+        printf "${color_time}${color_time_text}(%02g:%02g (mm:ss))" $mins $secs
     elif [ $secs -gt 0 ] ; then
-        printf "(%s seconds)" $secs
+        printf "${color_time}${color_time_text}(%s seconds)" $secs
     fi
-    echo " ####${color_reset}"
+	if [ $ret -eq 0 ] ; then
+        echo "${color_reset}${color_success} ####${color_reset}"
+    else
+        echo "${color_reset}${color_failed} ####${color_reset}"
+    fi
+    if [ $ret -eq 0 ] ; then
+        echo "Build completed successfully" > $ANDROID_BUILD_TOP/monitor/build_result
+    else
+        echo "Failed to build some targets" > $ANDROID_BUILD_TOP/monitor/build_result
+    fi
+	if [ $hours -gt 0 ] ; then
+        printf "Time taken: %02g:%02g:%02g (hh:mm:ss)" $hours $mins $secs >> $ANDROID_BUILD_TOP/monitor/build_result
+    elif [ $mins -gt 0 ] ; then
+        printf "Time taken: %02g:%02g (mm:ss)" $mins $secs >> $ANDROID_BUILD_TOP/monitor/build_result
+    elif [ $secs -gt 0 ] ; then
+        printf "Time taken: %02g seconds" $secs >> $ANDROID_BUILD_TOP/monitor/build_result
+    fi
     echo
     return $ret
 }
