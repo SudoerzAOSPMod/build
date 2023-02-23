@@ -59,7 +59,7 @@ EOF
     local T=$(gettop)
     local A=""
     local i
-    for i in `cat $T/build/envsetup.sh $T/vendor/mia/build/envsetup.sh | sed -n "/^[[:blank:]]*function /s/function \([a-z_]*\).*/\1/p" | sort | uniq`; do
+    for i in `cat $T/build/envsetup.sh $T/vendor/sudoerz/build/envsetup.sh | sed -n "/^[[:blank:]]*function /s/function \([a-z_]*\).*/\1/p" | sort | uniq`; do
       A="$A $i"
     done
     echo $A
@@ -70,8 +70,8 @@ function build_build_var_cache()
 {
     local T=$(gettop)
     # Grep out the variable names from the script.
-    cached_vars=(`cat $T/build/envsetup.sh $T/vendor/mia/build/envsetup.sh | tr '()' '  ' | awk '{for(i=1;i<=NF;i++) if($i~/get_build_var/) print $(i+1)}' | sort -u | tr '\n' ' '`)
-    cached_abs_vars=(`cat $T/build/envsetup.sh $T/vendor/mia/build/envsetup.sh | tr '()' '  ' | awk '{for(i=1;i<=NF;i++) if($i~/get_abs_build_var/) print $(i+1)}' | sort -u | tr '\n' ' '`)
+    cached_vars=(`cat $T/build/envsetup.sh $T/vendor/sudoerz/build/envsetup.sh | tr '()' '  ' | awk '{for(i=1;i<=NF;i++) if($i~/get_build_var/) print $(i+1)}' | sort -u | tr '\n' ' '`)
+    cached_abs_vars=(`cat $T/build/envsetup.sh $T/vendor/sudoerz/build/envsetup.sh | tr '()' '  ' | awk '{for(i=1;i<=NF;i++) if($i~/get_abs_build_var/) print $(i+1)}' | sort -u | tr '\n' ' '`)
     # Call the build system to dump the "<val>=<value>" pairs as a shell script.
     build_dicts_script=`\builtin cd $T; build/soong/soong_ui.bash --dumpvars-mode \
                         --vars="${cached_vars[*]}" \
@@ -153,12 +153,12 @@ function check_product()
         echo "Couldn't locate the top of the tree.  Try setting TOP." >&2
         return
     fi
-    if (echo -n $1 | grep -q -e "^mia_") ; then
-        MIA_BUILD=$(echo -n $1 | sed -e 's/^mia_//g')
+    if (echo -n $1) ; then
+        SU_BUILD=$(echo -n $1)
     else
-        MIA_BUILD=
+        SU_BUILD=
     fi
-    export MIA_BUILD
+    export SU_BUILD
 
         TARGET_PRODUCT=$1 \
         TARGET_BUILD_VARIANT= \
@@ -767,20 +767,7 @@ function lunch()
         return 1
     fi
 
-    if ! check_product $product
-    then
-        # if we can't find a product, try to grab it off the Project Mia GitHub
-        T=$(gettop)
-        cd $T > /dev/null
-        vendor/mia/build/tools/roomservice.py $product
-        cd - > /dev/null
-        check_product $product
-    else
-        T=$(gettop)
-        cd $T > /dev/null
-        vendor/mia/build/tools/roomservice.py $product true
-        cd - > /dev/null
-    fi
+    check_product $product
 
     TARGET_PRODUCT=$product \
     TARGET_BUILD_VARIANT=$variant \
@@ -792,15 +779,6 @@ function lunch()
         then
             echo "Did you mean -${product/*_/}? (dash instead of underscore)"
         fi
-        echo
-        echo "** Don't have a product spec for: '$product'"
-        echo "** Do you have the right repo manifest?"
-        product=
-    fi
-
-    if [ -z "$product" -o -z "$variant" ]
-    then
-        echo
         return 1
     fi
     export TARGET_PRODUCT=$(get_build_var TARGET_PRODUCT)
@@ -1785,9 +1763,9 @@ function _wrap_build()
     local secs=$(($tdiff % 60))
     local ncolors=$(tput colors 2>/dev/null)
     if [ -n "$ncolors" ] && [ $ncolors -ge 8 ]; then
-        color_failed=$'\E'"[0;31m"
-        color_success=$'\E'"[0;32m"
-        color_warning=$'\E'"[0;33m"
+        color_failed=$'\E'"[1;41m"
+        color_success=$'\E'"[1;42m"
+        color_warning=$'\E'"[1;43m"
         color_reset=$'\E'"[00m"
     else
         color_failed=""
@@ -1802,18 +1780,39 @@ function _wrap_build()
 
     echo
     if [ $ret -eq 0 ] ; then
-        echo -n "${color_success}#### build completed successfully "
+        echo "${color_success}"
+        echo "${color_success}┌──────────Infomeition──────────┐${color_reset}"
+        echo "${color_success}│ Build completed successfully  │${color_reset}"
+        echo "${color_success}├───────────────────────────────┤${color_reset}"
+        echo "${color_success}│ Time taken:                   │${color_reset}"
+        if [ $hours -gt 0 ] ; then
+        printf "${color_success}│ %02g:%02g:%02g (hh:mm:ss)           │${color_reset}\n" $hours $mins $secs
+        elif [ $mins -gt 0 ] ; then
+        printf "${color_success}│ %02g:%02g (mm:ss)                 │${color_reset}\n" $mins $secs
+        elif [ $secs -gt 0 ] && [ $secs -lt 10 ]; then
+        printf "${color_success}│ %s seconds                     │${color_reset}\n" $secs
+        elif [ $secs -gt 0 ] && [ $secs -gt 9 ] ; then
+        printf "${color_success}│ %s seconds                    │${color_reset}\n" $secs
+        fi
+        echo "${color_success}└───────────────────────────────┘${color_reset}"
+        echo "${color_reset}"
     else
-        echo -n "${color_failed}#### failed to build some targets "
+        echo "${color_failed}┌──────────Infomeition──────────┐${color_reset}"
+        echo "${color_failed}│ Failed to build some targets  │${color_reset}"
+        echo "${color_failed}├───────────────────────────────┤${color_reset}"
+        echo "${color_failed}│ Time taken:                   │${color_reset}"
+        if [ $hours -gt 0 ] ; then
+        printf "${color_failed}│ %02g:%02g:%02g (hh:mm:ss)           │${color_reset}\n" $hours $mins $secs
+        elif [ $mins -gt 0 ] ; then
+        printf "${color_failed}│ %02g:%02g (mm:ss)                 │${color_reset}\n" $mins $secs
+        elif [ $secs -gt 0 ] && [ $secs -lt 10 ]; then
+        printf "${color_failed}│ %s seconds                     │${color_reset}\n" $secs
+        elif [ $secs -gt 0 ] && [ $secs -gt 9 ] ; then
+        printf "${color_failed}│ %s seconds                    │${color_reset}\n" $secs
+        fi
+        echo "${color_failed}└───────────────────────────────┘${color_reset}"
+        echo "${color_reset}"
     fi
-    if [ $hours -gt 0 ] ; then
-        printf "(%02g:%02g:%02g (hh:mm:ss))" $hours $mins $secs
-    elif [ $mins -gt 0 ] ; then
-        printf "(%02g:%02g (mm:ss))" $mins $secs
-    elif [ $secs -gt 0 ] ; then
-        printf "(%s seconds)" $secs
-    fi
-    echo " ####${color_reset}"
     echo
     return $ret
 }
@@ -2002,4 +2001,4 @@ addcompletions
 
 export ANDROID_BUILD_TOP=$(gettop)
 
-. $ANDROID_BUILD_TOP/vendor/mia/build/envsetup.sh
+. $ANDROID_BUILD_TOP/vendor/sudoerz/build/envsetup.sh
