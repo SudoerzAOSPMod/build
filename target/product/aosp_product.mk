@@ -18,22 +18,17 @@
 $(call inherit-product, $(SRC_TARGET_DIR)/product/handheld_product.mk)
 $(call inherit-product, $(SRC_TARGET_DIR)/product/telephony_product.mk)
 
-# Default AOSP sounds
-ifeq ($(SU_BUILD),)
-$(call inherit-product-if-exists, frameworks/base/data/sounds/AllAudio.mk)
-else
-$(call inherit-product-if-exists, frameworks/base/data/sounds/AudioPackage14.mk)
-endif
+# Do not Get some sounds, gms blob will replace it.
+#ifeq ($(SU_BUILD),)
+#$(call inherit-product-if-exists, frameworks/base/data/sounds/AllAudio.mk)
+3else
+#$(call inherit-product-if-exists, #frameworks/base/data/sounds/AudioPackage14.mk)
+#endif
 
 # Additional settings used in all AOSP builds
-PRODUCT_PRODUCT_PROPERTIES += \
-    ro.config.ringtone?=Ring_Synth_04.ogg \
-    ro.config.notification_sound?=pixiedust.ogg
-
-ifeq ($(KSCOPE_BUILD),)
-PRODUCT_PRODUCT_PROPERTIES += \
-    ro.com.android.dataroaming?=true
-endif
+#PRODUCT_PRODUCT_PROPERTIES += \
+#    ro.config.ringtone?=Ring_Synth_04.ogg \
+#    ro.config.notification_sound?=pixiedust.ogg
 
 # More AOSP packages
 PRODUCT_PACKAGES += \
