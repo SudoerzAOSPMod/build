@@ -443,7 +443,7 @@ endif
 FIND_LEAVES_EXCLUDES := $(addprefix --prune=, $(SCAN_EXCLUDE_DIRS) .repo .git)
 
 -include vendor/extra/BoardConfigExtra.mk
-include vendor/sudoerz/config/BoardConfigSudoerz.mk
+include vendor/sudoerz/target/board/BoardConfigSU.mk
 
 # The build system exposes several variables for where to find the kernel
 # headers:
